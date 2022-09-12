@@ -23,7 +23,7 @@ export const Description = () => (
     </a>
     . In addition, it uses Youtube IFrame and search / comments data APIs for loading Youtube video,
     fetching video comments and finding related videos.{' '}
-    <a href="https://github.com/tiyaro/youtube-comments-analyzer" target="_blank" rel="noreferrer">
+    <a href="https://github.com/forall-ai/youtube-comments-analyzer" target="_blank" rel="noreferrer">
       View source code on GitHub.
     </a>
   </Box>
