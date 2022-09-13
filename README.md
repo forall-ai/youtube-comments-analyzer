@@ -10,7 +10,7 @@ It uses the following Tiyaro models / APIs:
 In addition, it uses Youtube IFrame and search / comments data APIs for loading Youtube video,
 fetching video comments and finding related videos.
 
-## screenshot / [live demo]('https://youtube-comments-analyzer.forallai.com/')
+## screenshot / [live demo](https://youtube-comments-analyzer.forallai.com/)
 
 ![Screenshot](ytca-screenshot.png)
 
