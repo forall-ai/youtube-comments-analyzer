@@ -92,7 +92,7 @@ export const analyzeYoutubeComments = async (
   args: {videoId: string; pageToken?: string},
   context: any,
   _info: GraphQLResolveInfo,
-) => {
+): Promise<AnalyzeYoutubeCommentsResults> => {
   if (DEBUG) {
     console.log(
       `analyzeYoutubeCommentsResolver, attrs=${JSON.stringify(
