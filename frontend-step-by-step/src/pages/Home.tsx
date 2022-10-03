@@ -11,8 +11,10 @@ import {Description} from '../components/Description';
 import {YoutubeVideo} from '../components/YoutubeVideo';
 import {VideoIDTextField} from '../components/VideoIDTextField';
 import {RelatedVideos} from '../components/RelatedVideos';
+import {AuthError} from '../components/AuthError';
+import {CommentsAnalysis} from '../components/CommentsAnalysis';
 
-import {YtrvState, YtcaState, YoutubeRelatedVideos} from '../types';
+import {YtrvState, YtcaState, YoutubeRelatedVideos, AnalyzeYoutubeCommentsResults} from '../types';
 
 // TODO: you should update this for non-local deployment
 const BACKEND_URL = 'http://localhost:3001';
@@ -75,6 +77,13 @@ export default function Home() {
   const [apiKey, setApiKey] = useState(
     localStorage.getItem(USER_API_KEY_HANDLE) || INITIAL_API_KEY,
   );
+  const [userApiKey, setUserApiKey] = useState('');
+  const [tick, setTick] = useState(0);
+
+  const loadMore = () => {
+    setTick((tick) => tick + 1);
+    setYtcaState((s) => ({...s, loading: true, error: ''}));
+  };
 
   const switchVideo = (videoId: string) => {
     setYtcaState({
@@ -92,6 +101,87 @@ export default function Home() {
       error: '',
     });
   };
+
+  const handleChangeUserApiKey = (key: string) => {
+    setUserApiKey(key);
+  };
+
+  const handleSaveApiKey = () => {
+    localStorage.setItem(USER_API_KEY_HANDLE, userApiKey);
+    setApiKey(userApiKey);
+  };
+
+  useEffect(() => {
+    const vid = getVideoId(ytcaState.videoId);
+    if (!vid) {
+      return;
+    }
+    const effectAsync = async (apiKey: string) => {
+      let error = '';
+      try {
+        // for the given youtube video,
+        //   fetch 10 comments starting from the page token
+        //   detect the comment language using MS cog text language detect model
+        //   translate the comments to English if from-lang is supported by IBM watson
+        //   perform sentiment analysis by running the (translated) comment
+        //   through huggingface distilbert - base - uncased - finetuned - sst - 2 - english model
+        const r1 = await fetch(BACKEND_URL, {
+          method: 'post',
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            query: `{ analyzeYoutubeComments(videoId: "${vid}", pageToken: "${ytcaState.nextPageToken}")  }`,
+          }),
+        }).then((r) => r.json());
+
+        const {data, errors} = r1;
+
+        if (!data || !data.analyzeYoutubeComments) {
+          // no results
+          if (
+            errors &&
+            errors[0] &&
+            errors[0].extensions &&
+            errors[0].extensions.code === 'UNAUTHENTICATED'
+          ) {
+            // API quota exceeded - ask user to login and get api token
+            error = AUTH_ERROR;
+          } else {
+            // some unknown generic error
+            error = 'Generic error';
+          }
+        }
+
+        if (!error) {
+          const {results, nextPageToken} =
+            data.analyzeYoutubeComments as AnalyzeYoutubeCommentsResults;
+
+          setYtcaState({
+            videoId: ytcaState.videoId,
+            results: ytcaState.results.concat(results),
+            nextPageToken: nextPageToken || '', // nextPageToken could be undefined
+            loading: false,
+            error: '',
+          });
+        }
+      } catch (e) {
+        error = NETWORK_ERROR;
+      } finally {
+        if (error) {
+          setYtcaState({
+            videoId: ytcaState.videoId,
+            results: [],
+            nextPageToken: '',
+            loading: false,
+            error,
+          });
+        }
+      }
+    };
+    effectAsync(apiKey);
+  }, [ytcaState.videoId, tick, apiKey]);
 
   useEffect(() => {
     const vid = getVideoId(ytrvState.videoId);
@@ -165,7 +255,7 @@ export default function Home() {
     effectAsync(apiKey);
   }, [ytrvState.videoId, apiKey]);
 
-  const {videoId} = ytcaState;
+  const {videoId, error} = ytcaState;
   return (
     <Box m={4}>
       <Header />
@@ -177,6 +267,27 @@ export default function Home() {
           <VideoIDTextField videoId={videoId} handleChange={switchVideo} />
           <RelatedVideos ytrvState={ytrvState} switchVideo={switchVideo} />
         </Box>
+      </Box>
+
+      <Box mt={4}>
+        {error ? (
+          error === AUTH_ERROR ? (
+            <AuthError
+              userApiKey={userApiKey}
+              handleChangeUserApiKey={handleChangeUserApiKey}
+              handleSaveApiKey={handleSaveApiKey}
+            />
+          ) : error === NETWORK_ERROR ? (
+            <Box>
+              Network error - please make sure the server is running then try again by refreshing
+              the browser
+            </Box>
+          ) : (
+            <Box>API error - please try again later by refreshing the browser</Box>
+          )
+        ) : (
+          <CommentsAnalysis ytcaState={ytcaState} loadMore={loadMore} />
+        )}
       </Box>
     </Box>
   );
