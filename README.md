@@ -12,7 +12,7 @@ fetching video comments and finding related videos.
 
 ## Blog
 
-A blog that provides step-by-step guide to developing this app can be found [here](https://medium.com/@klatchco/youtube-comments-analyzer-in-7-easy-steps-7475dea85a9d)
+A blog that provides step-by-step guide to developing this app can be found [here](https://medium.com/@klatchco/youtube-comments-analyzer-in-7-easy-steps-7475dea85a9d). Another blog on the broader topic of "The rise of AI apps" can be found [here](https://medium.com/@klatchco/the-rise-of-modern-ai-apps-72e512e16c56).
 
 ## Screenshot / [live demo](https://youtube-comments-analyzer.forallai.com/)
 
