@@ -10,11 +10,15 @@ It uses the following Tiyaro models / APIs:
 In addition, it uses Youtube IFrame and search / comments data APIs for loading Youtube video,
 fetching video comments and finding related videos.
 
-## screenshot / [live demo](https://youtube-comments-analyzer.forallai.com/)
+## Blog
+
+A blog that provides step-by-step guide to developing this app can be found [here](https://medium.com/@klatchco/youtube-comments-analyzer-in-7-easy-steps-7475dea85a9d)
+
+## Screenshot / [live demo](https://youtube-comments-analyzer.forallai.com/)
 
 ![Screenshot](ytca-screenshot.png)
 
-## backend
+## Backend
 
 Nodejs based Apollo GraphQL server to provide two APIs:
 - get related Youtube videos
@@ -43,7 +47,7 @@ Run in production mode:
 $ yarn start-prod
 ```
 
-## frontend
+## Frontend
 
 React + MUI based UI to show Youtube video, related videos, video comments analysis.
 
